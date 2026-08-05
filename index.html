@@ -350,7 +350,7 @@
   </main>
 
   <script>
-    // ⚠️ CAMBIA ESTA URL por la de tu API
+    // URL correcta de tu API
     const API_URL = 'https://d66jhejyh8.execute-api.us-east-1.amazonaws.com/PDF';
 
     const fileInput = document.getElementById('fileInput');
@@ -489,7 +489,6 @@
         try {
           data = JSON.parse(raw);
         } catch {
-          // Si no es JSON, mostrar el texto crudo
           throw new Error(
             `La Lambda no devolvió JSON válido.\n` +
             `HTTP Status: ${response.status}\n` +
@@ -501,23 +500,15 @@
         if (data && typeof data.body === 'string') {
           try {
             data = JSON.parse(data.body);
-          } catch {
-            // dejar data como está
-          }
+          } catch {}
         }
 
         if (!response.ok || data.error) {
           let errorMsg = `HTTP Status: ${response.status}\n`;
           
-          if (data.error) {
-            errorMsg += `Error: ${data.error}\n`;
-          }
-          if (data.message) {
-            errorMsg += `Message: ${data.message}\n`;
-          }
-          if (data.traceback) {
-            errorMsg += `\nTraceback:\n${data.traceback}`;
-          }
+          if (data.error) errorMsg += `Error: ${data.error}\n`;
+          if (data.message) errorMsg += `Message: ${data.message}\n`;
+          if (data.traceback) errorMsg += `\nTraceback:\n${data.traceback}`;
           if (!data.error && !data.message && !data.traceback) {
             errorMsg += `Respuesta completa:\n${JSON.stringify(data, null, 2)}`;
           }
