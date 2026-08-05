@@ -6,15 +6,18 @@
   <title>Extractor Estado de Cuenta Amex</title>
   <style>
     :root {
+      color-scheme: light;
       --bg: #eef2f6;
       --panel: #ffffff;
       --text: #1f2933;
       --muted: #667085;
       --line: #d7dde5;
+      --line-strong: #a9b4c2;
       --primary: #1769aa;
       --primary-dark: #0f4f86;
       --danger: #b42318;
       --success: #057a55;
+      --warning: #a15c00;
       font-family: Arial, Helvetica, sans-serif;
     }
     * { box-sizing: border-box; }
@@ -29,17 +32,26 @@
       border-bottom: 1px solid var(--line);
       padding: 14px 22px;
     }
-    .header-inner, main {
-      width: min(960px, calc(100% - 28px));
+    .header-inner,
+    main {
+      width: min(1100px, calc(100% - 28px));
       margin: 0 auto;
     }
     .header-inner {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
     }
-    h1 { margin: 0; font-size: 18px; }
-    main { padding: 18px 0 30px; display: grid; gap: 14px; }
+    h1 {
+      margin: 0;
+      font-size: 18px;
+    }
+    main {
+      padding: 18px 0 26px;
+      display: grid;
+      gap: 14px;
+    }
     .status {
       border: 1px solid var(--line);
       border-radius: 999px;
@@ -47,6 +59,7 @@
       color: var(--muted);
       background: #f8fafc;
       font-size: 12px;
+      white-space: nowrap;
     }
     .panel {
       background: var(--panel);
@@ -57,74 +70,177 @@
     .panel-header {
       padding: 13px 16px;
       border-bottom: 1px solid var(--line);
-      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+    .panel-title {
+      margin: 0;
       font-size: 15px;
+      font-weight: 700;
     }
     .panel-body { padding: 16px; }
     .file-box {
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
       align-items: center;
-      gap: 12px;
-      border: 1px dashed #a9b4c2;
+      border: 1px dashed var(--line-strong);
       background: #f8fafc;
       border-radius: 8px;
-      padding: 14px;
+      padding: 12px;
     }
-    .file-name { color: var(--muted); font-size: 13px; flex: 1; }
-    .actions { margin-top: 14px; display: flex; gap: 10px; }
+    .file-name {
+      color: var(--muted);
+      font-size: 13px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .actions {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
     button {
       height: 39px;
       border-radius: 6px;
-      padding: 0 16px;
-      border: 1px solid #a9b4c2;
-      background: #fff;
+      padding: 0 14px;
+      border: 1px solid var(--line-strong);
+      background: #ffffff;
+      color: #344054;
       font-size: 14px;
       font-weight: 700;
       cursor: pointer;
     }
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
     .btn-primary {
-      background: var(--primary);
       border-color: var(--primary);
-      color: white;
+      background: var(--primary);
+      color: #ffffff;
     }
     .btn-primary:hover { background: var(--primary-dark); }
-    button:disabled { opacity: 0.55; cursor: not-allowed; }
     .message {
       margin-top: 12px;
-      padding: 11px 12px;
-      border-radius: 7px;
-      font-size: 13px;
       border: 1px solid var(--line);
       background: #f8fafc;
+      border-radius: 7px;
+      padding: 11px 12px;
       color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      white-space: pre-wrap;
     }
-    .message.error { background: #fff4f2; color: var(--danger); border-color: #f5c2c0; }
-    .message.success { background: #f0fdf7; color: var(--success); border-color: #a7f3d0; }
-    .message.info { background: #f0f7ff; color: var(--primary); border-color: #bfdbfe; }
+    .message.success {
+      color: var(--success);
+      background: #f0fdf7;
+      border-color: rgba(5, 122, 85, 0.35);
+    }
+    .message.error {
+      color: var(--danger);
+      background: #fff4f2;
+      border-color: rgba(180, 35, 24, 0.35);
+    }
+    .message.warning {
+      color: var(--warning);
+      background: #fff8eb;
+      border-color: rgba(161, 92, 0, 0.35);
+    }
+    .message.info {
+      color: var(--primary);
+      background: #f0f7ff;
+      border-color: rgba(23, 105, 170, 0.3);
+    }
     .hidden { display: none !important; }
-    .grid {
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 10px;
+      background: #ffffff;
+    }
+    .metric-label {
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 5px;
+    }
+    .metric-value {
+      font-size: 15px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+    .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
+      gap: 12px;
+      margin-bottom: 14px;
     }
-    .label { color: var(--muted); font-size: 12px; }
-    .value { font-weight: 700; margin-top: 2px; }
-    .saldo { font-size: 20px; color: var(--primary); font-weight: 700; }
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .value {
+      font-weight: 700;
+      margin-top: 2px;
+      font-size: 14px;
+    }
+    .saldo {
+      font-size: 20px;
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .table-wrap {
+      width: 100%;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #ffffff;
+      max-height: 420px;
+      margin-top: 10px;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
-      margin-top: 10px;
+      font-size: 12px;
     }
     th, td {
-      padding: 8px 10px;
       border-bottom: 1px solid var(--line);
+      padding: 8px 10px;
       text-align: left;
+      vertical-align: top;
     }
-    th { background: #f1f5f9; }
-    td:last-child { text-align: right; }
-    @media (max-width: 700px) {
-      .grid { grid-template-columns: 1fr; }
+    th {
+      background: #eef2f6;
+      color: #344054;
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    td:last-child {
+      text-align: right;
+      white-space: nowrap;
+    }
+    tr:nth-child(even) td { background: #fafbfc; }
+    @media (max-width: 900px) {
+      .summary, .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .status { white-space: normal; }
     }
   </style>
 </head>
@@ -137,78 +253,258 @@
   </header>
 
   <main>
+    <!-- Panel de subida -->
     <section class="panel">
-      <div class="panel-header">Subir PDF</div>
+      <div class="panel-header">
+        <h2 class="panel-title">Archivo PDF</h2>
+      </div>
       <div class="panel-body">
         <div class="file-box">
           <div class="file-name" id="fileName">Selecciona el PDF del estado de cuenta</div>
-          <input type="file" id="fileInput" accept=".pdf,application/pdf">
+          <input id="fileInput" type="file" accept=".pdf,application/pdf">
         </div>
 
         <div class="actions">
-          <button class="btn-primary" id="extractBtn">Extraer información</button>
-          <button id="clearBtn">Limpiar</button>
+          <button class="btn-primary" id="extractButton" type="button">Extraer información</button>
+          <button id="clearButton" type="button">Limpiar</button>
         </div>
 
         <div class="message info" id="messageBox">
-          Selecciona el PDF y haz clic en Extraer información.
+          Selecciona el PDF y haz clic en <strong>Extraer información</strong>.
         </div>
       </div>
     </section>
 
+    <!-- Panel de resultados -->
     <section class="panel hidden" id="resultPanel">
-      <div class="panel-header">Resultado</div>
-      <div class="panel-body" id="resultBody"></div>
+      <div class="panel-header">
+        <h2 class="panel-title">Resultado</h2>
+        <div class="status" id="resultStatus">—</div>
+      </div>
+      <div class="panel-body">
+        <div class="summary">
+          <div class="metric">
+            <div class="metric-label">Tarjetahabiente</div>
+            <div class="metric-value" id="cardholder">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Empresa</div>
+            <div class="metric-value" id="company">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Número de cuenta</div>
+            <div class="metric-value" id="account">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Saldo a pagar</div>
+            <div class="metric-value" id="balance">—</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <div class="label">RFC</div>
+            <div class="value" id="rfc">—</div>
+          </div>
+          <div>
+            <div class="label">Fecha de corte</div>
+            <div class="value" id="cutDate">—</div>
+          </div>
+          <div>
+            <div class="label">Fecha límite de pago</div>
+            <div class="value" id="dueDate">—</div>
+          </div>
+          <div>
+            <div class="label">Periodo</div>
+            <div class="value" id="period">—</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <div class="label">Dirección</div>
+          <div class="value" id="address">—</div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <div class="label">Saldo anterior</div>
+            <div class="value" id="prevBalance">—</div>
+          </div>
+          <div>
+            <div class="label">Pagos y créditos</div>
+            <div class="value" id="payments">—</div>
+          </div>
+          <div>
+            <div class="label">Nuevos cargos</div>
+            <div class="value" id="newCharges">—</div>
+          </div>
+          <div>
+            <div class="label">Total comisiones</div>
+            <div class="value" id="commissions">—</div>
+          </div>
+        </div>
+
+        <div id="transactionsSection" class="hidden">
+          <h3 style="margin:18px 0 8px; font-size:14px;">Transacciones</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Descripción</th>
+                  <th>Importe</th>
+                </tr>
+              </thead>
+              <tbody id="transactionsBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="financialSection" class="hidden">
+          <h3 style="margin:18px 0 8px; font-size:14px;">Transacciones financieras</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Concepto</th>
+                  <th>Importe</th>
+                </tr>
+              </thead>
+              <tbody id="financialBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
   <script>
-    // ⚠️ CAMBIA ESTA URL por la de tu API (con el stage)
+    // ⚠️ CAMBIA ESTA URL por la de tu Lambda / API Gateway
     const API_URL = 'https://d66jhejyh8.execute-api.us-east-1.amazonaws.com/PDF';
 
     const fileInput = document.getElementById('fileInput');
     const fileName = document.getElementById('fileName');
-    const extractBtn = document.getElementById('extractBtn');
-    const clearBtn = document.getElementById('clearBtn');
+    const extractButton = document.getElementById('extractButton');
+    const clearButton = document.getElementById('clearButton');
     const statusText = document.getElementById('statusText');
     const messageBox = document.getElementById('messageBox');
     const resultPanel = document.getElementById('resultPanel');
-    const resultBody = document.getElementById('resultBody');
+    const resultStatus = document.getElementById('resultStatus');
 
     let selectedFile = null;
 
+    function setMessage(text, type = 'info') {
+      messageBox.textContent = text;
+      messageBox.className = `message ${type}`;
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = String(reader.result || '');
+          resolve(result.includes(',') ? result.split(',').pop() : result);
+        };
+        reader.onerror = () => reject(reader.error || new Error('No se pudo leer el archivo'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function clearResult() {
+      resultPanel.classList.add('hidden');
+      document.getElementById('transactionsSection').classList.add('hidden');
+      document.getElementById('financialSection').classList.add('hidden');
+      document.getElementById('transactionsBody').innerHTML = '';
+      document.getElementById('financialBody').innerHTML = '';
+    }
+
+    function showResult(data) {
+      document.getElementById('cardholder').textContent = data.tarjetahabiente || '—';
+      document.getElementById('company').textContent = data.empresa || '—';
+      document.getElementById('account').textContent = data.numero_cuenta || '—';
+      document.getElementById('balance').textContent = data.saldo_a_pagar ? `$${data.saldo_a_pagar}` : '—';
+      document.getElementById('rfc').textContent = data.rfc || '—';
+      document.getElementById('cutDate').textContent = data.fecha_corte || '—';
+      document.getElementById('dueDate').textContent = data.fecha_limite_pago || '—';
+      document.getElementById('period').textContent = data.periodo || '—';
+      document.getElementById('address').textContent = data.direccion || '—';
+      document.getElementById('prevBalance').textContent = data.saldo_anterior ? `$${data.saldo_anterior}` : '—';
+      document.getElementById('payments').textContent = data.pagos_creditos ? `$${data.pagos_creditos}` : '—';
+      document.getElementById('newCharges').textContent = data.nuevos_cargos ? `$${data.nuevos_cargos}` : '—';
+      document.getElementById('commissions').textContent = data.total_comisiones ? `$${data.total_comisiones}` : '—';
+
+      // Transacciones
+      const tbody = document.getElementById('transactionsBody');
+      tbody.innerHTML = '';
+      if (data.transacciones && data.transacciones.length) {
+        data.transacciones.forEach(t => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${t.fecha || ''}</td>
+            <td>${t.descripcion || ''}</td>
+            <td>$${t.importe_mn || ''}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+        document.getElementById('transactionsSection').classList.remove('hidden');
+      }
+
+      // Transacciones financieras
+      const fbody = document.getElementById('financialBody');
+      fbody.innerHTML = '';
+      if (data.transacciones_financieras && data.transacciones_financieras.length) {
+        data.transacciones_financieras.forEach(t => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${t.concepto || ''}</td>
+            <td>$${t.importe || ''}</td>
+          `;
+          fbody.appendChild(tr);
+        });
+        document.getElementById('financialSection').classList.remove('hidden');
+      }
+
+      resultStatus.textContent = 'Extraído';
+      resultPanel.classList.remove('hidden');
+    }
+
     fileInput.addEventListener('change', () => {
-      selectedFile = fileInput.files[0] || null;
+      selectedFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
       if (selectedFile) {
-        fileName.textContent = `${selectedFile.name} (${(selectedFile.size / 1024).toFixed(1)} KB)`;
+        fileName.textContent = selectedFile.name;
         statusText.textContent = 'Archivo listo';
         setMessage('Archivo seleccionado. Haz clic en Extraer información.', 'info');
       } else {
         fileName.textContent = 'Selecciona el PDF del estado de cuenta';
         statusText.textContent = 'Listo';
       }
-      resultPanel.classList.add('hidden');
+      clearResult();
     });
 
-    clearBtn.addEventListener('click', () => {
-      fileInput.value = '';
+    clearButton.addEventListener('click', () => {
       selectedFile = null;
+      fileInput.value = '';
       fileName.textContent = 'Selecciona el PDF del estado de cuenta';
       statusText.textContent = 'Listo';
-      resultPanel.classList.add('hidden');
       setMessage('Selecciona el PDF y haz clic en Extraer información.', 'info');
+      clearResult();
     });
 
-    extractBtn.addEventListener('click', async () => {
+    extractButton.addEventListener('click', async () => {
       if (!selectedFile) {
         setMessage('Selecciona un archivo PDF primero.', 'error');
         return;
       }
 
-      extractBtn.disabled = true;
+      if (!selectedFile.name.toLowerCase().endsWith('.pdf')) {
+        setMessage('El archivo debe ser un PDF.', 'error');
+        return;
+      }
+
+      extractButton.disabled = true;
       statusText.textContent = 'Procesando...';
       setMessage('Enviando PDF a la Lambda...', 'info');
-      resultPanel.classList.add('hidden');
+      clearResult();
 
       try {
         const base64 = await fileToBase64(selectedFile);
@@ -216,146 +512,42 @@
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          mode: 'cors',
           body: JSON.stringify({
             pdf_base64: base64,
             filename: selectedFile.name
           })
         });
 
-        const data = await response.json();
+        const raw = await response.text();
+        let data;
+        try {
+          data = JSON.parse(raw);
+        } catch {
+          throw new Error('La Lambda no devolvió un JSON válido:\n' + raw.slice(0, 500));
+        }
+
+        // Si API Gateway envuelve el body
+        if (data && typeof data.body === 'string') {
+          try {
+            data = JSON.parse(data.body);
+          } catch {}
+        }
 
         if (!response.ok || data.error) {
-          throw new Error(data.error || data.message || 'Error desconocido en la Lambda');
+          throw new Error(data.error || data.message || `Error HTTP ${response.status}`);
         }
 
         showResult(data);
         setMessage('Información extraída correctamente.', 'success');
         statusText.textContent = 'Listo';
-      } catch (err) {
-        setMessage('Error: ' + err.message, 'error');
+      } catch (error) {
+        setMessage('Error: ' + error.message, 'error');
         statusText.textContent = 'Error';
       } finally {
-        extractBtn.disabled = false;
+        extractButton.disabled = false;
       }
     });
-
-    function fileToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result;
-          resolve(result.includes(',') ? result.split(',')[1] : result);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function setMessage(text, type = 'info') {
-      messageBox.textContent = text;
-      messageBox.className = `message ${type}`;
-    }
-
-    function showResult(data) {
-      let html = `
-        <div class="grid">
-          <div>
-            <div class="label">Tarjetahabiente</div>
-            <div class="value">${data.tarjetahabiente || '—'}</div>
-          </div>
-          <div>
-            <div class="label">Empresa</div>
-            <div class="value">${data.empresa || '—'}</div>
-          </div>
-          <div>
-            <div class="label">RFC</div>
-            <div class="value">${data.rfc || '—'}</div>
-          </div>
-          <div>
-            <div class="label">Número de cuenta</div>
-            <div class="value">${data.numero_cuenta || '—'}</div>
-          </div>
-          <div>
-            <div class="label">Fecha de corte</div>
-            <div class="value">${data.fecha_corte || '—'}</div>
-          </div>
-          <div>
-            <div class="label">Fecha límite de pago</div>
-            <div class="value">${data.fecha_limite_pago || '—'}</div>
-          </div>
-        </div>
-
-        <p style="margin-top:16px"><span class="label">Periodo:</span> ${data.periodo || '—'}</p>
-        <p><span class="label">Dirección:</span> ${data.direccion || '—'}</p>
-
-        <hr style="border:none; border-top:1px solid #d7dde5; margin:18px 0">
-
-        <div class="grid">
-          <div>
-            <div class="label">Saldo anterior</div>
-            <div class="value">$${data.saldo_anterior || '—'}</div>
-          </div>
-          <div>
-            <div class="label">Pagos y créditos</div>
-            <div class="value">$${data.pagos_creditos || '—'}</div>
-          </div>
-          <div>
-            <div class="label">Nuevos cargos</div>
-            <div class="value">$${data.nuevos_cargos || '—'}</div>
-          </div>
-          <div>
-            <div class="label">Saldo a pagar</div>
-            <div class="saldo">$${data.saldo_a_pagar || '—'}</div>
-          </div>
-        </div>
-      `;
-
-      if (data.total_comisiones) {
-        html += `<p style="margin-top:12px"><span class="label">Total comisiones:</span> $${data.total_comisiones}</p>`;
-      }
-
-      if (data.transacciones && data.transacciones.length) {
-        html += `
-          <h3 style="margin:20px 0 8px; font-size:14px">Transacciones (${data.transacciones.length})</h3>
-          <table>
-            <thead>
-              <tr><th>Fecha</th><th>Descripción</th><th>Importe</th></tr>
-            </thead>
-            <tbody>
-              ${data.transacciones.map(t => `
-                <tr>
-                  <td>${t.fecha}</td>
-                  <td>${t.descripcion}</td>
-                  <td>$${t.importe_mn}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-      }
-
-      if (data.transacciones_financieras && data.transacciones_financieras.length) {
-        html += `
-          <h3 style="margin:20px 0 8px; font-size:14px">Transacciones financieras</h3>
-          <table>
-            <thead>
-              <tr><th>Concepto</th><th>Importe</th></tr>
-            </thead>
-            <tbody>
-              ${data.transacciones_financieras.map(t => `
-                <tr>
-                  <td>${t.concepto}</td>
-                  <td>$${t.importe}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-      }
-
-      resultBody.innerHTML = html;
-      resultPanel.classList.remove('hidden');
-    }
   </script>
 </body>
 </html>
