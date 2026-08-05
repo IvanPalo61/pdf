@@ -3,227 +3,74 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Extractor Estado de Cuenta Amex</title>
+  <title>Extractor Amex</title>
   <style>
-    :root {
-      color-scheme: light;
-      --bg: #eef2f6;
-      --panel: #ffffff;
-      --text: #1f2933;
-      --muted: #667085;
-      --line: #d7dde5;
-      --line-strong: #a9b4c2;
-      --primary: #1769aa;
-      --primary-dark: #0f4f86;
-      --danger: #b42318;
-      --success: #057a55;
-      --warning: #a15c00;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-    * { box-sizing: border-box; }
     body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #eef2f6;
       margin: 0;
       min-height: 100vh;
-      background: var(--bg);
-      color: var(--text);
-    }
-    header {
-      background: var(--panel);
-      border-bottom: 1px solid var(--line);
-      padding: 14px 22px;
-    }
-    .header-inner,
-    main {
-      width: min(900px, calc(100% - 28px));
-      margin: 0 auto;
-    }
-    .header-inner {
       display: flex;
+      justify-content: center;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      padding: 20px;
+    }
+    .box {
+      background: white;
+      border: 1px solid #d7dde5;
+      border-radius: 10px;
+      padding: 32px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
     h1 {
-      margin: 0;
-      font-size: 18px;
+      margin: 0 0 8px;
+      font-size: 20px;
+      color: #1f2933;
     }
-    main {
-      padding: 18px 0 26px;
-      display: grid;
-      gap: 14px;
-    }
-    .status {
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 7px 11px;
-      color: var(--muted);
-      background: #f8fafc;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .panel-header {
-      padding: 13px 16px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-    }
-    .panel-title {
-      margin: 0;
-      font-size: 15px;
-      font-weight: 700;
-    }
-    .panel-body { padding: 16px; }
-    .file-box {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 10px;
-      align-items: center;
-      border: 1px dashed var(--line-strong);
-      background: #f8fafc;
-      border-radius: 8px;
-      padding: 14px;
-    }
-    .file-name {
-      color: var(--muted);
-      font-size: 13px;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-    .actions {
-      margin-top: 14px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    button, .btn {
-      height: 39px;
-      border-radius: 6px;
-      padding: 0 16px;
-      border: 1px solid var(--line-strong);
-      background: #ffffff;
-      color: #344054;
+    p {
+      margin: 0 0 24px;
+      color: #667085;
       font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-    }
-    button:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-    .btn-primary {
-      border-color: var(--primary);
-      background: var(--primary);
-      color: #ffffff;
-    }
-    .btn-primary:hover { background: var(--primary-dark); }
-    .message {
-      margin-top: 12px;
-      border: 1px solid var(--line);
-      background: #f8fafc;
-      border-radius: 7px;
-      padding: 11px 12px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-    .message.info {
-      color: var(--primary);
-      background: #f0f7ff;
-      border-color: rgba(23, 105, 170, 0.3);
     }
     input[type="file"] {
-      font-size: 13px;
+      width: 100%;
+      padding: 12px;
+      border: 1px dashed #a9b4c2;
+      border-radius: 8px;
+      background: #f8fafc;
+      margin-bottom: 16px;
     }
-    @media (max-width: 600px) {
-      .header-inner {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .status { white-space: normal; }
+    button {
+      width: 100%;
+      height: 42px;
+      background: #1769aa;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0f4f86;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="header-inner">
-      <h1>Extractor Estado de Cuenta Amex</h1>
-      <div class="status" id="statusText">Listo</div>
-    </div>
-  </header>
+  <div class="box">
+    <h1>Extractor Estado de Cuenta Amex</h1>
+    <p>Selecciona el PDF y haz clic en Extraer. La Lambda procesará todo y te mostrará el resultado.</p>
 
-  <main>
-    <section class="panel">
-      <div class="panel-header">
-        <h2 class="panel-title">Subir PDF</h2>
-      </div>
-      <div class="panel-body">
-        <form action="https://d66jhejyh8.execute-api.us-east-1.amazonaws.com/PDF" 
-              method="POST" 
-              enctype="multipart/form-data"
-              id="uploadForm">
-          
-          <div class="file-box">
-            <div class="file-name" id="fileName">Selecciona el PDF del estado de cuenta</div>
-            <input type="file" name="file" id="fileInput" accept=".pdf,application/pdf" required>
-          </div>
-
-          <div class="actions">
-            <button class="btn-primary" type="submit" id="submitBtn">Extraer información</button>
-            <button type="button" id="clearBtn">Limpiar</button>
-          </div>
-
-          <div class="message info">
-            Selecciona el PDF del estado de cuenta de American Express y haz clic en <strong>Extraer información</strong>.
-            La Lambda procesará el archivo y te mostrará el resumen.
-          </div>
-        </form>
-      </div>
-    </section>
-  </main>
-
-  <script>
-    const fileInput = document.getElementById('fileInput');
-    const fileName = document.getElementById('fileName');
-    const statusText = document.getElementById('statusText');
-    const submitBtn = document.getElementById('submitBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const form = document.getElementById('uploadForm');
-
-    fileInput.addEventListener('change', () => {
-      const file = fileInput.files[0];
-      if (file) {
-        fileName.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
-        statusText.textContent = 'Archivo listo';
-      } else {
-        fileName.textContent = 'Selecciona el PDF del estado de cuenta';
-        statusText.textContent = 'Listo';
-      }
-    });
-
-    clearBtn.addEventListener('click', () => {
-      fileInput.value = '';
-      fileName.textContent = 'Selecciona el PDF del estado de cuenta';
-      statusText.textContent = 'Listo';
-    });
-
-    form.addEventListener('submit', () => {
-      statusText.textContent = 'Enviando...';
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Procesando...';
-    });
-  </script>
+    <!-- CAMBIA ESTA URL por la de tu Stage -->
+    <form action="https://d66jhejyh8.execute-api.us-east-1.amazonaws.com/prod" 
+          method="POST" 
+          enctype="multipart/form-data">
+      
+      <input type="file" name="file" accept=".pdf,application/pdf" required>
+      <button type="submit">Extraer información</button>
+    </form>
+  </div>
 </body>
 </html>
