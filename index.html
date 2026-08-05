@@ -43,10 +43,7 @@
       justify-content: space-between;
       gap: 12px;
     }
-    h1 {
-      margin: 0;
-      font-size: 18px;
-    }
+    h1 { margin: 0; font-size: 18px; }
     main {
       padding: 18px 0 26px;
       display: grid;
@@ -135,6 +132,7 @@
       font-size: 13px;
       line-height: 1.45;
       white-space: pre-wrap;
+      word-break: break-word;
     }
     .message.success {
       color: var(--success);
@@ -145,11 +143,6 @@
       color: var(--danger);
       background: #fff4f2;
       border-color: rgba(180, 35, 24, 0.35);
-    }
-    .message.warning {
-      color: var(--warning);
-      background: #fff8eb;
-      border-color: rgba(161, 92, 0, 0.35);
     }
     .message.info {
       color: var(--primary);
@@ -185,20 +178,8 @@
       gap: 12px;
       margin-bottom: 14px;
     }
-    .label {
-      color: var(--muted);
-      font-size: 12px;
-    }
-    .value {
-      font-weight: 700;
-      margin-top: 2px;
-      font-size: 14px;
-    }
-    .saldo {
-      font-size: 20px;
-      color: var(--primary);
-      font-weight: 700;
-    }
+    .label { color: var(--muted); font-size: 12px; }
+    .value { font-weight: 700; margin-top: 2px; font-size: 14px; }
     .table-wrap {
       width: 100%;
       overflow: auto;
@@ -227,19 +208,11 @@
       top: 0;
       z-index: 1;
     }
-    td:last-child {
-      text-align: right;
-      white-space: nowrap;
-    }
+    td:last-child { text-align: right; white-space: nowrap; }
     tr:nth-child(even) td { background: #fafbfc; }
     @media (max-width: 900px) {
-      .summary, .grid-2 {
-        grid-template-columns: 1fr;
-      }
-      .header-inner {
-        flex-direction: column;
-        align-items: flex-start;
-      }
+      .summary, .grid-2 { grid-template-columns: 1fr; }
+      .header-inner { flex-direction: column; align-items: flex-start; }
       .status { white-space: normal; }
     }
   </style>
@@ -253,7 +226,6 @@
   </header>
 
   <main>
-    <!-- Panel de subida -->
     <section class="panel">
       <div class="panel-header">
         <h2 class="panel-title">Archivo PDF</h2>
@@ -275,7 +247,6 @@
       </div>
     </section>
 
-    <!-- Panel de resultados -->
     <section class="panel hidden" id="resultPanel">
       <div class="panel-header">
         <h2 class="panel-title">Resultado</h2>
@@ -379,8 +350,8 @@
   </main>
 
   <script>
-    // ⚠️ CAMBIA ESTA URL por la de tu Lambda / API Gateway
-    const API_URL = 'https://d66jhejyh8.execute-api.us-east-1.amazonaws.com/PDF';
+    // ⚠️ CAMBIA ESTA URL por la de tu API
+    const API_URL = 'https://d66jhejyh8.execute-api.us-east-1.amazonaws.com/prod';
 
     const fileInput = document.getElementById('fileInput');
     const fileName = document.getElementById('fileName');
@@ -433,7 +404,6 @@
       document.getElementById('newCharges').textContent = data.nuevos_cargos ? `$${data.nuevos_cargos}` : '—';
       document.getElementById('commissions').textContent = data.total_comisiones ? `$${data.total_comisiones}` : '—';
 
-      // Transacciones
       const tbody = document.getElementById('transactionsBody');
       tbody.innerHTML = '';
       if (data.transacciones && data.transacciones.length) {
@@ -449,7 +419,6 @@
         document.getElementById('transactionsSection').classList.remove('hidden');
       }
 
-      // Transacciones financieras
       const fbody = document.getElementById('financialBody');
       fbody.innerHTML = '';
       if (data.transacciones_financieras && data.transacciones_financieras.length) {
@@ -496,11 +465,6 @@
         return;
       }
 
-      if (!selectedFile.name.toLowerCase().endsWith('.pdf')) {
-        setMessage('El archivo debe ser un PDF.', 'error');
-        return;
-      }
-
       extractButton.disabled = true;
       statusText.textContent = 'Procesando...';
       setMessage('Enviando PDF a la Lambda...', 'info');
@@ -520,29 +484,52 @@
         });
 
         const raw = await response.text();
+
         let data;
         try {
           data = JSON.parse(raw);
         } catch {
-          throw new Error('La Lambda no devolvió un JSON válido:\n' + raw.slice(0, 500));
+          // Si no es JSON, mostrar el texto crudo
+          throw new Error(
+            `La Lambda no devolvió JSON válido.\n` +
+            `HTTP Status: ${response.status}\n` +
+            `Respuesta cruda:\n${raw.slice(0, 2000)}`
+          );
         }
 
         // Si API Gateway envuelve el body
         if (data && typeof data.body === 'string') {
           try {
             data = JSON.parse(data.body);
-          } catch {}
+          } catch {
+            // dejar data como está
+          }
         }
 
         if (!response.ok || data.error) {
-          throw new Error(data.error || data.message || `Error HTTP ${response.status}`);
+          let errorMsg = `HTTP Status: ${response.status}\n`;
+          
+          if (data.error) {
+            errorMsg += `Error: ${data.error}\n`;
+          }
+          if (data.message) {
+            errorMsg += `Message: ${data.message}\n`;
+          }
+          if (data.traceback) {
+            errorMsg += `\nTraceback:\n${data.traceback}`;
+          }
+          if (!data.error && !data.message && !data.traceback) {
+            errorMsg += `Respuesta completa:\n${JSON.stringify(data, null, 2)}`;
+          }
+
+          throw new Error(errorMsg);
         }
 
         showResult(data);
         setMessage('Información extraída correctamente.', 'success');
         statusText.textContent = 'Listo';
       } catch (error) {
-        setMessage('Error: ' + error.message, 'error');
+        setMessage('Error:\n' + error.message, 'error');
         statusText.textContent = 'Error';
       } finally {
         extractButton.disabled = false;
