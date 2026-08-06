@@ -224,7 +224,6 @@
       <div class="status" id="statusText">Listo</div>
     </div>
   </header>
-
   <main>
     <section class="panel">
       <div class="panel-header">
@@ -235,12 +234,10 @@
           <div class="file-name" id="fileName">Selecciona el PDF del estado de cuenta</div>
           <input id="fileInput" type="file" accept=".pdf,application/pdf">
         </div>
-
         <div class="actions">
           <button class="btn-primary" id="extractButton" type="button">Extraer información</button>
           <button id="clearButton" type="button">Limpiar</button>
         </div>
-
         <div class="message info" id="messageBox">
           Selecciona el PDF y haz clic en <strong>Extraer información</strong>.
         </div>
@@ -253,6 +250,8 @@
         <div class="status" id="resultStatus">—</div>
       </div>
       <div class="panel-body">
+
+        <!-- Resumen principal -->
         <div class="summary">
           <div class="metric">
             <div class="metric-label">Tarjetahabiente</div>
@@ -274,10 +273,6 @@
 
         <div class="grid-2">
           <div>
-            <div class="label">RFC</div>
-            <div class="value" id="rfc">—</div>
-          </div>
-          <div>
             <div class="label">Fecha de corte</div>
             <div class="value" id="cutDate">—</div>
           </div>
@@ -289,11 +284,10 @@
             <div class="label">Periodo</div>
             <div class="value" id="period">—</div>
           </div>
-        </div>
-
-        <div style="margin-bottom:14px">
-          <div class="label">Dirección</div>
-          <div class="value" id="address">—</div>
+          <div>
+            <div class="label">Total comisiones</div>
+            <div class="value" id="commissions">—</div>
+          </div>
         </div>
 
         <div class="grid-2">
@@ -310,13 +304,31 @@
             <div class="value" id="newCharges">—</div>
           </div>
           <div>
-            <div class="label">Total comisiones</div>
-            <div class="value" id="commissions">—</div>
+            <div class="label">RFC</div>
+            <div class="value" id="rfc">—</div>
           </div>
         </div>
 
+        <!-- Pagos recibidos -->
+        <div id="paymentsSection" class="hidden">
+          <h3 style="margin:18px 0 8px; font-size:14px;">Pagos recibidos</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Descripción</th>
+                  <th>Importe</th>
+                </tr>
+              </thead>
+              <tbody id="paymentsBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Transacciones (nuevos cargos) -->
         <div id="transactionsSection" class="hidden">
-          <h3 style="margin:18px 0 8px; font-size:14px;">Transacciones</h3>
+          <h3 style="margin:18px 0 8px; font-size:14px;">Nuevos cargos / Transacciones</h3>
           <div class="table-wrap">
             <table>
               <thead>
@@ -331,26 +343,11 @@
           </div>
         </div>
 
-        <div id="financialSection" class="hidden">
-          <h3 style="margin:18px 0 8px; font-size:14px;">Transacciones financieras</h3>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Concepto</th>
-                  <th>Importe</th>
-                </tr>
-              </thead>
-              <tbody id="financialBody"></tbody>
-            </table>
-          </div>
-        </div>
       </div>
     </section>
   </main>
 
   <script>
-    // URL correcta de tu API
     const API_URL = 'https://d66jhejyh8.execute-api.us-east-1.amazonaws.com/PDF';
 
     const fileInput = document.getElementById('fileInput');
@@ -383,30 +380,49 @@
 
     function clearResult() {
       resultPanel.classList.add('hidden');
+      document.getElementById('paymentsSection').classList.add('hidden');
       document.getElementById('transactionsSection').classList.add('hidden');
-      document.getElementById('financialSection').classList.add('hidden');
+      document.getElementById('paymentsBody').innerHTML = '';
       document.getElementById('transactionsBody').innerHTML = '';
-      document.getElementById('financialBody').innerHTML = '';
     }
 
     function showResult(data) {
+      // Datos principales
       document.getElementById('cardholder').textContent = data.tarjetahabiente || '—';
       document.getElementById('company').textContent = data.empresa || '—';
       document.getElementById('account').textContent = data.numero_cuenta || '—';
       document.getElementById('balance').textContent = data.saldo_a_pagar ? `$${data.saldo_a_pagar}` : '—';
-      document.getElementById('rfc').textContent = data.rfc || '—';
+
       document.getElementById('cutDate').textContent = data.fecha_corte || '—';
       document.getElementById('dueDate').textContent = data.fecha_limite_pago || '—';
       document.getElementById('period').textContent = data.periodo || '—';
-      document.getElementById('address').textContent = data.direccion || '—';
+      document.getElementById('commissions').textContent = data.total_comisiones ? `$${data.total_comisiones}` : '—';
+
       document.getElementById('prevBalance').textContent = data.saldo_anterior ? `$${data.saldo_anterior}` : '—';
       document.getElementById('payments').textContent = data.pagos_creditos ? `$${data.pagos_creditos}` : '—';
       document.getElementById('newCharges').textContent = data.nuevos_cargos ? `$${data.nuevos_cargos}` : '—';
-      document.getElementById('commissions').textContent = data.total_comisiones ? `$${data.total_comisiones}` : '—';
+      document.getElementById('rfc').textContent = data.rfc || '—';
 
+      // ===== Pagos recibidos =====
+      const paymentsBody = document.getElementById('paymentsBody');
+      paymentsBody.innerHTML = '';
+      if (data.pagos_recibidos && data.pagos_recibidos.length > 0) {
+        data.pagos_recibidos.forEach(p => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${p.fecha || ''}</td>
+            <td>${p.descripcion || ''}</td>
+            <td>$${p.importe || ''}</td>
+          `;
+          paymentsBody.appendChild(tr);
+        });
+        document.getElementById('paymentsSection').classList.remove('hidden');
+      }
+
+      // ===== Transacciones (nuevos cargos) =====
       const tbody = document.getElementById('transactionsBody');
       tbody.innerHTML = '';
-      if (data.transacciones && data.transacciones.length) {
+      if (data.transacciones && data.transacciones.length > 0) {
         data.transacciones.forEach(t => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
@@ -417,20 +433,6 @@
           tbody.appendChild(tr);
         });
         document.getElementById('transactionsSection').classList.remove('hidden');
-      }
-
-      const fbody = document.getElementById('financialBody');
-      fbody.innerHTML = '';
-      if (data.transacciones_financieras && data.transacciones_financieras.length) {
-        data.transacciones_financieras.forEach(t => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${t.concepto || ''}</td>
-            <td>$${t.importe || ''}</td>
-          `;
-          fbody.appendChild(tr);
-        });
-        document.getElementById('financialSection').classList.remove('hidden');
       }
 
       resultStatus.textContent = 'Extraído';
@@ -484,8 +486,8 @@
         });
 
         const raw = await response.text();
-
         let data;
+
         try {
           data = JSON.parse(raw);
         } catch {
@@ -505,20 +507,19 @@
 
         if (!response.ok || data.error) {
           let errorMsg = `HTTP Status: ${response.status}\n`;
-          
           if (data.error) errorMsg += `Error: ${data.error}\n`;
           if (data.message) errorMsg += `Message: ${data.message}\n`;
-          if (data.traceback) errorMsg += `\nTraceback:\n${data.traceback}`;
-          if (!data.error && !data.message && !data.traceback) {
+          if (data.stack) errorMsg += `\nStack:\n${data.stack}`;
+          if (!data.error && !data.message) {
             errorMsg += `Respuesta completa:\n${JSON.stringify(data, null, 2)}`;
           }
-
           throw new Error(errorMsg);
         }
 
         showResult(data);
         setMessage('Información extraída correctamente.', 'success');
         statusText.textContent = 'Listo';
+
       } catch (error) {
         setMessage('Error:\n' + error.message, 'error');
         statusText.textContent = 'Error';
