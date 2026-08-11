@@ -17,7 +17,6 @@
       --primary-dark: #0f4f86;
       --danger: #b42318;
       --success: #057a55;
-      --warning: #a15c00;
       font-family: Arial, Helvetica, sans-serif;
     }
     * { box-sizing: border-box; }
@@ -250,8 +249,6 @@
         <div class="status" id="resultStatus">—</div>
       </div>
       <div class="panel-body">
-
-        <!-- Resumen principal -->
         <div class="summary">
           <div class="metric">
             <div class="metric-label">Tarjetahabiente</div>
@@ -309,7 +306,6 @@
           </div>
         </div>
 
-        <!-- Pagos recibidos -->
         <div id="paymentsSection" class="hidden">
           <h3 style="margin:18px 0 8px; font-size:14px;">Pagos recibidos</h3>
           <div class="table-wrap">
@@ -326,7 +322,6 @@
           </div>
         </div>
 
-        <!-- Transacciones (nuevos cargos) -->
         <div id="transactionsSection" class="hidden">
           <h3 style="margin:18px 0 8px; font-size:14px;">Nuevos cargos / Transacciones</h3>
           <div class="table-wrap">
@@ -342,7 +337,6 @@
             </table>
           </div>
         </div>
-
       </div>
     </section>
   </main>
@@ -387,7 +381,6 @@
     }
 
     function showResult(data) {
-      // Datos principales
       document.getElementById('cardholder').textContent = data.tarjetahabiente || '—';
       document.getElementById('company').textContent = data.empresa || '—';
       document.getElementById('account').textContent = data.numero_cuenta || '—';
@@ -403,7 +396,7 @@
       document.getElementById('newCharges').textContent = data.nuevos_cargos ? `$${data.nuevos_cargos}` : '—';
       document.getElementById('rfc').textContent = data.rfc || '—';
 
-      // ===== Pagos recibidos =====
+      // Pagos recibidos
       const paymentsBody = document.getElementById('paymentsBody');
       paymentsBody.innerHTML = '';
       if (data.pagos_recibidos && data.pagos_recibidos.length > 0) {
@@ -419,7 +412,7 @@
         document.getElementById('paymentsSection').classList.remove('hidden');
       }
 
-      // ===== Transacciones (nuevos cargos) =====
+      // Transacciones
       const tbody = document.getElementById('transactionsBody');
       tbody.innerHTML = '';
       if (data.transacciones && data.transacciones.length > 0) {
@@ -442,7 +435,7 @@
     fileInput.addEventListener('change', () => {
       selectedFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
       if (selectedFile) {
-        fileName.textContent = selectedFile.name;
+        fileName.textContent = selectedFile.name + ` (${(selectedFile.size / 1024 / 1024).toFixed(2)} MB)`;
         statusText.textContent = 'Archivo listo';
         setMessage('Archivo seleccionado. Haz clic en Extraer información.', 'info');
       } else {
@@ -464,6 +457,12 @@
     extractButton.addEventListener('click', async () => {
       if (!selectedFile) {
         setMessage('Selecciona un archivo PDF primero.', 'error');
+        return;
+      }
+
+      // Aviso si el archivo es muy grande
+      if (selectedFile.size > 9 * 1024 * 1024) {
+        setMessage('El archivo es muy grande (> 9 MB). API Gateway puede rechazarlo.', 'error');
         return;
       }
 
