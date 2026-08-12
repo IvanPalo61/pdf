@@ -306,22 +306,6 @@
           </div>
         </div>
 
-        <div id="paymentsSection" class="hidden">
-          <h3 style="margin:18px 0 8px; font-size:14px;">Pagos recibidos</h3>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Descripción</th>
-                  <th>Importe</th>
-                </tr>
-              </thead>
-              <tbody id="paymentsBody"></tbody>
-            </table>
-          </div>
-        </div>
-
         <div id="transactionsSection" class="hidden">
           <h3 style="margin:18px 0 8px; font-size:14px;">Nuevos cargos / Transacciones</h3>
           <div class="table-wrap">
@@ -352,7 +336,6 @@
     const messageBox = document.getElementById('messageBox');
     const resultPanel = document.getElementById('resultPanel');
     const resultStatus = document.getElementById('resultStatus');
-
     let selectedFile = null;
 
     function setMessage(text, type = 'info') {
@@ -374,9 +357,7 @@
 
     function clearResult() {
       resultPanel.classList.add('hidden');
-      document.getElementById('paymentsSection').classList.add('hidden');
       document.getElementById('transactionsSection').classList.add('hidden');
-      document.getElementById('paymentsBody').innerHTML = '';
       document.getElementById('transactionsBody').innerHTML = '';
     }
 
@@ -385,34 +366,15 @@
       document.getElementById('company').textContent = data.empresa || '—';
       document.getElementById('account').textContent = data.numero_cuenta || '—';
       document.getElementById('balance').textContent = data.saldo_a_pagar ? `$${data.saldo_a_pagar}` : '—';
-
       document.getElementById('cutDate').textContent = data.fecha_corte || '—';
       document.getElementById('dueDate').textContent = data.fecha_limite_pago || '—';
       document.getElementById('period').textContent = data.periodo || '—';
       document.getElementById('commissions').textContent = data.total_comisiones ? `$${data.total_comisiones}` : '—';
-
       document.getElementById('prevBalance').textContent = data.saldo_anterior ? `$${data.saldo_anterior}` : '—';
       document.getElementById('payments').textContent = data.pagos_creditos ? `$${data.pagos_creditos}` : '—';
       document.getElementById('newCharges').textContent = data.nuevos_cargos ? `$${data.nuevos_cargos}` : '—';
       document.getElementById('rfc').textContent = data.rfc || '—';
 
-      // Pagos recibidos
-      const paymentsBody = document.getElementById('paymentsBody');
-      paymentsBody.innerHTML = '';
-      if (data.pagos_recibidos && data.pagos_recibidos.length > 0) {
-        data.pagos_recibidos.forEach(p => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${p.fecha || ''}</td>
-            <td>${p.descripcion || ''}</td>
-            <td>$${p.importe || ''}</td>
-          `;
-          paymentsBody.appendChild(tr);
-        });
-        document.getElementById('paymentsSection').classList.remove('hidden');
-      }
-
-      // Transacciones
       const tbody = document.getElementById('transactionsBody');
       tbody.innerHTML = '';
       if (data.transacciones && data.transacciones.length > 0) {
@@ -460,7 +422,6 @@
         return;
       }
 
-      // Aviso si el archivo es muy grande
       if (selectedFile.size > 9 * 1024 * 1024) {
         setMessage('El archivo es muy grande (> 9 MB). API Gateway puede rechazarlo.', 'error');
         return;
@@ -479,8 +440,7 @@
           headers: { 'Content-Type': 'application/json' },
           mode: 'cors',
           body: JSON.stringify({
-            pdf_base64: base64,
-            filename: selectedFile.name
+            pdf_base64: base64
           })
         });
 
@@ -490,11 +450,7 @@
         try {
           data = JSON.parse(raw);
         } catch {
-          throw new Error(
-            `La Lambda no devolvió JSON válido.\n` +
-            `HTTP Status: ${response.status}\n` +
-            `Respuesta cruda:\n${raw.slice(0, 2000)}`
-          );
+          throw new Error(`La Lambda no devolvió JSON válido.\nHTTP Status: ${response.status}\nRespuesta: ${raw.slice(0, 1500)}`);
         }
 
         // Si API Gateway envuelve el body
@@ -508,10 +464,6 @@
           let errorMsg = `HTTP Status: ${response.status}\n`;
           if (data.error) errorMsg += `Error: ${data.error}\n`;
           if (data.message) errorMsg += `Message: ${data.message}\n`;
-          if (data.stack) errorMsg += `\nStack:\n${data.stack}`;
-          if (!data.error && !data.message) {
-            errorMsg += `Respuesta completa:\n${JSON.stringify(data, null, 2)}`;
-          }
           throw new Error(errorMsg);
         }
 
