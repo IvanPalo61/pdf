@@ -326,6 +326,7 @@
   </main>
 
   <script>
+    // ↓↓↓ CAMBIA ESTA URL por la que te dio la nueva API Gateway ↓↓↓
     const API_URL = 'https://7sxwvd74jg.execute-api.us-east-1.amazonaws.com/amex-extractor';
 
     const fileInput = document.getElementById('fileInput');
@@ -423,7 +424,7 @@
       }
 
       if (selectedFile.size > 9 * 1024 * 1024) {
-        setMessage('El archivo es muy grande (> 9 MB). API Gateway puede rechazarlo.', 'error');
+        setMessage('El archivo es muy grande (> 9 MB).', 'error');
         return;
       }
 
@@ -437,8 +438,9 @@
 
         const response = await fetch(API_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify({
             pdf_base64: base64
           })
@@ -450,10 +452,10 @@
         try {
           data = JSON.parse(raw);
         } catch {
-          throw new Error(`La Lambda no devolvió JSON válido.\nHTTP Status: ${response.status}\nRespuesta: ${raw.slice(0, 1500)}`);
+          throw new Error(`Respuesta no es JSON válido.\nStatus: ${response.status}\nRespuesta: ${raw.slice(0, 800)}`);
         }
 
-        // Si API Gateway envuelve el body
+        // Por si API Gateway envuelve el body
         if (data && typeof data.body === 'string') {
           try {
             data = JSON.parse(data.body);
@@ -461,10 +463,10 @@
         }
 
         if (!response.ok || data.error) {
-          let errorMsg = `HTTP Status: ${response.status}\n`;
-          if (data.error) errorMsg += `Error: ${data.error}\n`;
-          if (data.message) errorMsg += `Message: ${data.message}\n`;
-          throw new Error(errorMsg);
+          let msg = `HTTP ${response.status}\n`;
+          if (data.error) msg += data.error;
+          else msg += JSON.stringify(data);
+          throw new Error(msg);
         }
 
         showResult(data);
@@ -472,6 +474,7 @@
         statusText.textContent = 'Listo';
 
       } catch (error) {
+        console.error(error);
         setMessage('Error:\n' + error.message, 'error');
         statusText.textContent = 'Error';
       } finally {
